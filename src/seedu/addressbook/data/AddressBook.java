@@ -5,9 +5,12 @@ import seedu.addressbook.data.person.UniquePersonList.*;
 import seedu.addressbook.data.tag.UniqueTagList;
 import seedu.addressbook.data.tag.UniqueTagList.*;
 import seedu.addressbook.data.tag.Tag;
+import seedu.addressbook.data.tag.Tagging;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,7 +25,8 @@ public class AddressBook {
 
     private final UniquePersonList allPersons;
     private final UniqueTagList allTags; // can contain tags not attached to any person
-
+    private final List<Tagging> taggingHistory = new ArrayList<Tagging>(); //contains the history of all the tagging
+    
     /**
      * Creates an empty address book.
      */
@@ -79,6 +83,18 @@ public class AddressBook {
     public void addPerson(Person toAdd) throws DuplicatePersonException {
         syncTagsWithMasterList(toAdd);
         allPersons.add(toAdd);
+        addToTaggingHistory(toAdd);
+    }
+    
+    /*
+     * Adds a person to the tagging history
+     */
+    private void addToTaggingHistory(Person toAdd) {
+    	List<Tag> listOftags = toAdd.getTags().getInternalList();
+    	for(Tag tag: listOftags){
+            Tagging tagToAdd = new Tagging(toAdd, tag);
+            taggingHistory.add(tagToAdd);
+    	}
     }
 
     /**
@@ -110,9 +126,21 @@ public class AddressBook {
      * @throws PersonNotFoundException if no such Person could be found.
      */
     public void removePerson(ReadOnlyPerson toRemove) throws PersonNotFoundException {
+        removeFromTaggingHistory(toRemove);
         allPersons.remove(toRemove);
     }
 
+    /*
+     * Removes a person from the tagging history
+     */
+    private void removeFromTaggingHistory(ReadOnlyPerson toRemove) {
+        List<Tag> listOfTags = toRemove.getTags().getInternalList();
+        for(Tag tag : listOfTags) {
+            Tagging tagging = new Tagging((Person) toRemove, tag);
+            taggingHistory.add(tagging);
+        }        
+    }
+    
     /**
      * Removes the equivalent Tag from the address book.
      *
